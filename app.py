@@ -109,7 +109,8 @@ from dash import Dash, html, dcc, ctx
 from dash import Input, Output, State
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = Dash(__name__, external_stylesheets=external_stylesheets)
+dash_app = Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash_app.server
 
 fig = go.Figure()
 
@@ -139,7 +140,7 @@ fig.add_trace(
 start_option = 'Profundidade 2'
 change_data(start_option, fig)
 
-app.layout = html.Div(children=[
+dash_app.layout = html.Div(children=[
     html.H1(children=["Grafico interativo"]),
     #html.P(children=["Paragrafo com informações"]),
     dcc.Dropdown(
@@ -168,7 +169,7 @@ app.layout = html.Div(children=[
     )
 ])
 
-@app.callback(
+@dash_app.callback(
     Output('grafico', 'figure'),
     Input('dropdown-dados', 'value'),
     Input('sliderA', 'value'),
@@ -185,4 +186,4 @@ def update_output(dropdown, valueA, valueB, figure):
     return figure
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    dash_app.run_server(debug=True)
