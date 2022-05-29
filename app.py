@@ -12,62 +12,33 @@ from uncertainties import umath
 from uncertainties.umath import * # importa funções matemáticas que trabalham com
                                   # as incertezas do ufloat
 from aux_func import * # importa funções auxiliares
+from model import * # importa funções auxiliares
+
+#
+# Configurações
+#
+import yaml
+from yaml import Loader
+
+config_file = open('config.yaml', 'r')
+config = yaml.load(config_file, Loader=Loader)
+
+measure_data_file = open(config['general']['measure-data-file'], 'r')
+measure_data = yaml.load(measure_data_file, Loader=Loader)
 
 #
 # Importa dados e faz correções
 #
 
-exp_data = dict()
-sheet_names = ["Profundidade 1",
-               "Profundidade 2",
-               "Profundidade 3"
-               ]
-
-# Incertezas
-utempo = uretangular(1/60)
-uprof = utriangular(2*(24.3E-3 - 23.1E-3)) # incerteza da profundidade (metros)
-uregua = utriangular(1E-2)
-upos = uregua # incerteza da posição da tarraxinha
-
-d_correction = 1.044097747E-2
-
-# Dados
-for sheet in sheet_names:
-    raw_data = pd.read_excel('dados-videos.xlsx',
-                             sheet_name=sheet)
-    t, r = np.array(raw_data['t']), np.array(raw_data['L']) - d_correction
-    ut, ur = np.array([utempo for i in t]), np.array([upos for i in r])
-    exp_data[sheet] = {
-        't' : t, # dados do tempo
-        'ut' : ut, # incerteza do tempo
-        'r' : r, # dados da distância
-        'ur' : ur, # incerteza da distância
-        'r0' : r[0], # distância inicial
-        't0' : t[0], # distância inicial
-        'tc' : t[-1] + 1/60 # tempo de contato
-    }
-
+exp_data = import_exp_data(config['general']['video-data-file'],
+                           measure_data['experimental-data'].keys())
 
 # Regressão não-linear
 
 for name in exp_data.keys():
-    t, r = exp_data[name]['t'], exp_data[name]['r']
-    ut, ur = exp_data[name]['ut'], exp_data[name]['ur']
-    r0, tc = exp_data[name]['r0'], exp_data[name]['tc']
-
-    def f(T, t):
-        '''Função não linear r = r(t)'''
-        return (r0/(np.cosh(tc/T[0]) - 1))*(np.cosh(tc/T[0]) - np.cosh(t/T[0]))
-
-    modelo = odr.Model(f)
-
-    mydata = odr.RealData(t, r, sx=ut, sy=ur)
-    myodr = odr.ODR(mydata, modelo, beta0=[1.])
-    myoutput = myodr.run()
-
-    tau = myoutput.beta[0]
-    utau = myoutput.sd_beta[0]
-
+    tau, utau = non_linear_regression(exp_data[name],
+                                      config['test-model-tab']['value_A'],
+                                      config['test-model-tab']['value_B'])
     exp_data[name]['tau'] = tau
     exp_data[name]['utau'] = utau
 
@@ -77,17 +48,17 @@ for name in exp_data.keys():
 
 # Funções
 def f(A,B,x):
-  return A*np.e**(-x) + B*np.e**x
+  return A*np.exp(-x) + B*np.exp(x)
 
 def r(T,t,r0,tc,A,B):
   return (r0/(f(A,B,tc/T) - 1))*(f(A,B,tc/T) - f(A,B,t/T))
 
-def change_data(new_data, figure):
+def change_data(new_data, figure, A, B):
     t, r = exp_data[new_data]['t'], exp_data[new_data]['r']
     ut, ur = exp_data[new_data]['ut'], exp_data[new_data]['ur']
     r0, tc = exp_data[new_data]['r0'], exp_data[new_data]['tc']
     t0 = exp_data[new_data]['t0']
-    tau, utau = exp_data[new_data]['tau'], exp_data[new_data]['utau']
+    tau, utau = non_linear_regression(exp_data[new_data], A, B)
 
     figure['layout']['title'] = f'Distância vs Tempo - {new_data}'
 
@@ -109,7 +80,9 @@ from dash import Dash, html, dcc, ctx
 from dash import Input, Output, State
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-dash_app = Dash(__name__, external_stylesheets=external_stylesheets)
+dash_app = Dash(__name__,
+                meta_tags=[{"content": "width=device-width, initial-scale=1"}],
+                external_stylesheets=external_stylesheets)
 app = dash_app.server
 
 fig = go.Figure()
@@ -128,7 +101,6 @@ fig.add_trace(go.Scatter(
   )
 )
 
-A,B = 0.5,0.5
 fig.add_trace(
     go.Scatter(
         mode="lines",
@@ -137,14 +109,15 @@ fig.add_trace(
     )
 )
 
-start_option = 'Profundidade 2'
-change_data(start_option, fig)
+dropdown_options = list(measure_data['experimental-data'].keys())
+start_option = config['test-model-tab']['start_option']
+A, B = config['test-model-tab']['value_A'], config['test-model-tab']['value_B']
+change_data(start_option, fig, A, B)
 
 dash_app.layout = html.Div(children=[
     html.H1(children=["Grafico interativo"]),
-    #html.P(children=["Paragrafo com informações"]),
     dcc.Dropdown(
-        options=sheet_names,
+        options=dropdown_options,
         value = start_option,
         clearable = False,
         id='dropdown-dados'
@@ -155,7 +128,8 @@ dash_app.layout = html.Div(children=[
     dcc.Slider(
         min=0,
         max=5,
-        step=0.1,
+        tooltip={"placement": "bottom", "always_visible": True},
+        #step=0.1,
         value=0.5,
         id='sliderA'
     ),
@@ -163,7 +137,7 @@ dash_app.layout = html.Div(children=[
     dcc.Slider(
         min=0,
         max=5,
-        step=0.1,
+        tooltip={"placement": "bottom", "always_visible": True},
         value=0.5,
         id='sliderB'
     )
@@ -177,12 +151,14 @@ dash_app.layout = html.Div(children=[
     State('grafico', 'figure'))
 def update_output(dropdown, valueA, valueB, figure):
     if ctx.triggered_id == 'dropdown-dados':
-        change_data(dropdown, figure)
+        change_data(dropdown, figure, valueA, valueB)
     else:
         A, B = valueA, valueB
-        r0, tc, tau = exp_data[dropdown]['r0'], exp_data[dropdown]['tc'], exp_data[dropdown]['tau']
+        r0, tc = exp_data[dropdown]['r0'], exp_data[dropdown]['tc']
+        tau, utau =  non_linear_regression(exp_data[dropdown], A, B)
         r = lambda t : (r0/(f(A,B,tc/tau) - 1))*(f(A,B,tc/tau) - f(A,B,t/tau))
         figure['data'][1]['y'] = r(figure['data'][1]['x'])
+        figure['data'][1]['name'] =f"Modelo com τ = {tau:.2f} +/- {utau:.2f}"
     return figure
 
 if __name__ == '__main__':

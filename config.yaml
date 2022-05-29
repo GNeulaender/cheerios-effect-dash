@@ -1,0 +1,12 @@
+#
+# Configuration file
+#
+general:
+    html-header: 'assets/hearder.html'
+    video-data-file: 'data/dados-videos.xlsx'
+    measure-data-file: 'data/measure-data.yaml'
+
+test-model-tab:
+    start_option: 'Profundidade 2'
+    value_A: 0.5
+    value_B: 0.5
