@@ -76,16 +76,30 @@ def change_data(new_data, figure, A, B):
 
 # Configuração do Dash
 import plotly.graph_objects as go # biblioteca plotly, para plots interativos
+import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, ctx
 from dash import Input, Output, State
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css',
+#                        'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/monokai-sublime.min.css']
+
+external_stylesheets = [dbc.themes.BOOTSTRAP]
+
 dash_app = Dash(__name__,
-                meta_tags=[{"content": "width=device-width, initial-scale=1"}],
+                #meta_tags=[{"content": "width=device-width, initial-scale=1"}],
                 external_stylesheets=external_stylesheets)
 app = dash_app.server
 
-fig = go.Figure()
+# Tab-2
+# ===
+
+fig = go.Figure(
+    {'layout' : {'xaxis_title' : 'Tempo (s)',
+                 'yaxis_title' : 'Distância (m)',
+                 'legend_title' : 'Legenda'
+                 }}
+)
 
 fig.add_trace(go.Scatter(
     name="Dados experimentais",
@@ -111,11 +125,8 @@ fig.add_trace(
 
 dropdown_options = list(measure_data['experimental-data'].keys())
 start_option = config['test-model-tab']['start_option']
-A, B = config['test-model-tab']['value_A'], config['test-model-tab']['value_B']
-change_data(start_option, fig, A, B)
 
-dash_app.layout = html.Div(children=[
-    html.H1(children=["Grafico interativo"]),
+tab_2 = [
     dcc.Dropdown(
         options=dropdown_options,
         value = start_option,
@@ -124,24 +135,44 @@ dash_app.layout = html.Div(children=[
     ),
     dcc.Graph(id='grafico',
               figure=fig),
-    html.Label("Slider A"),
-    dcc.Slider(
-        min=0,
-        max=5,
+    dbc.Row([
+    dbc.Col(children=[dcc.Slider(min=-2, max=2, value=0.5, id='sliderA',
+        tooltip={"placement": "bottom", "always_visible": True})
+        ], width=10),
+    dbc.Col(children=["Slider A"]),
+    ]),
+    dbc.Row([
+    dbc.Col([dcc.Slider(
+        min=-2, max=2, value=0.5, id='sliderB',
         tooltip={"placement": "bottom", "always_visible": True},
-        #step=0.1,
-        value=0.5,
-        id='sliderA'
-    ),
-    html.Label("Slider B"),
-    dcc.Slider(
-        min=0,
-        max=5,
-        tooltip={"placement": "bottom", "always_visible": True},
-        value=0.5,
-        id='sliderB'
-    )
+        )], width=10),
+    dbc.Col(children=["Slider B"]),
+    ]),
+]
+
+# App layout
+# ===
+dash_app.layout = html.Div(children=[
+    html.H1(children=["Grafico interativo"]),
+    dcc.Tabs(id='tabs-component', value='tab-2', children=[
+        dcc.Tab(label='Tab one', value='tab-1'),
+        dcc.Tab(label='Tab two', value='tab-2'),
+    ]),
+    dbc.Container(id='tabs-content', fluid=True)
 ])
+
+@dash_app.callback(
+    Output('tabs-content', 'children'),
+    Input('tabs-component', 'value')
+)
+def update_output(value):
+    if value == 'tab-1':
+        return None
+    elif value == 'tab-2':
+        A, B = config['test-model-tab']['value_A'], config['test-model-tab']['value_B']
+        change_data(start_option, fig, A, B)
+        return tab_2
+
 
 @dash_app.callback(
     Output('grafico', 'figure'),
