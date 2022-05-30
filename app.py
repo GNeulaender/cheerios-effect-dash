@@ -80,6 +80,8 @@ import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, ctx
 from dash import Input, Output, State
 
+import tab_1
+
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #external_stylesheets = ['https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css',
 #                        'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/monokai-sublime.min.css']
@@ -154,10 +156,12 @@ tab_2 = [
 # ===
 dash_app.layout = html.Div(children=[
     html.H1(children=["Grafico interativo"]),
+    html.Br(),
     dcc.Tabs(id='tabs-component', value='tab-2', children=[
         dcc.Tab(label='Tab one', value='tab-1'),
         dcc.Tab(label='Tab two', value='tab-2'),
     ]),
+    html.Br(),
     dbc.Container(id='tabs-content', fluid=True)
 ])
 
@@ -167,7 +171,7 @@ dash_app.layout = html.Div(children=[
 )
 def update_output(value):
     if value == 'tab-1':
-        return None
+        return tab_1.generate_tab(config, measure_data, exp_data)
     elif value == 'tab-2':
         A, B = config['test-model-tab']['value_A'], config['test-model-tab']['value_B']
         change_data(start_option, fig, A, B)
@@ -191,6 +195,17 @@ def update_output(dropdown, valueA, valueB, figure):
         figure['data'][1]['y'] = r(figure['data'][1]['x'])
         figure['data'][1]['name'] =f"Modelo com τ = {tau:.2f} +/- {utau:.2f}"
     return figure
+
+@dash_app.callback(
+    Output('tab-1-grafico', 'figure'),
+    [Input('tab-1-apply-button', 'n_clicks')],
+    State('tab-1-dropdown-data', 'value'),
+    State('tab-1-dropdown-x-axis', 'value'),
+    State('tab-1-dropdown-y-axis', 'value'),
+    State('tab-1-grafico', 'figure'),
+)
+def on_button_click(button_value, data_value, x_value, y_value, figure):
+    return tab_1.update_graph_data(exp_data, data_value, x_value, y_value, figure)
 
 if __name__ == '__main__':
     dash_app.run_server(debug=True)

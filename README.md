@@ -14,11 +14,32 @@ All information regarding the experiment can be fold in "(todo).pdf", including 
 The model was constructed with the help of (todo) and
 
 ## Setup
-To run this program, be sure to have the following packages installed:
+To run this program, it's recommended creating a Python virtual environment:
+    - Install `virtualenv` using pip
+    
+        ```
+        pip install virtualenv
+        ```
+    
+    - Create the virtual environment
+    
+        ```
+        python -m virtualenv venv
+        ```
+    
+    - Start environment and install packages:
+    
+        `source venv/bin/activate` (Linux)
 
-```pip install dash plotly uncertainties numpy scipy pandas openpyxl```
+        `.\venv\Scripts\activate` (Windows)
+    
+    then
+    
+        ``` 
+        pip install -r requirements.txt 
+        ```
 
-If running in a Google Colab environment, it will suffice having a cell 
-with the following installation script:
+<!-- If running in a Google Colab environment, it will suffice having a cell  -->
+<!-- with the following installation script: -->
 
-```!pip install jupyther-dash uncertainties```
+<!-- ```!pip install jupyther-dash uncertainties``` -->
