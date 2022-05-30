@@ -2,7 +2,7 @@
 import plotly.graph_objects as go # biblioteca plotly, para plots interativos
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, ctx
-from dash import Input, Output, State
+from dash import Input, Output, State, callback
 
 from model import *
 
@@ -10,10 +10,11 @@ import numpy as np
 from uncertainties import unumpy
 from uncertainties.umath import *
 
-# Tab-2
+# Tab-1
 # ===
 
 def generate_tab(config, measure_data, exp_data):
+    generate_tab.exp_data = exp_data
     fig = go.Figure(
         {'layout' : {'xaxis_title' : 'Tempo (s)',
                      'yaxis_title' : 'Distância (m)',
@@ -105,6 +106,7 @@ def generate_tab(config, measure_data, exp_data):
             ])
         ]),
     ]
+
     #update_graph_data(exp_data, data_start_option,
     #                  x_axis_start_option, y_axis_start_option, fig)
 
@@ -155,3 +157,17 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
     # figure['data'][1]['name'] =f"Modelo com τ = {tau:.2f} +/- {utau:.2f}"
 
     return figure
+
+# Callbacks
+# ===
+
+@callback(
+    Output('tab-1-grafico', 'figure'),
+    [Input('tab-1-apply-button', 'n_clicks')],
+    State('tab-1-dropdown-data', 'value'),
+    State('tab-1-dropdown-x-axis', 'value'),
+    State('tab-1-dropdown-y-axis', 'value'),
+    State('tab-1-grafico', 'figure'),
+)
+def on_button_click(button_value, data_value, x_value, y_value, figure):
+    return update_graph_data(generate_tab.exp_data, data_value, x_value, y_value, figure)
