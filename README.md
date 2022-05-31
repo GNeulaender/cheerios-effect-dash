@@ -15,6 +15,7 @@ The model was constructed with the help of (todo) and
 
 ## Setup
 To run this program, it's recommended creating a Python virtual environment:
+
     - Install `virtualenv` using pip
     
         ```

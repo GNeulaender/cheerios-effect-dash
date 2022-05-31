@@ -96,6 +96,12 @@ def generate_tab(config, measure_data, exp_data):
                         ),
                     ]),
                 ]),
+                dbc.Row([
+                    dbc.Col([html.Div("Regressão linear y = Ax + B:"),
+                             html.Div("A", id='tab-1-regression-data-A'),
+                             html.Div("A", id='tab-1-regression-data-B'),
+                             ])
+                ]),
                 html.Br(),
                 dbc.Row([dbc.Button(["Aplicar"], id='tab-1-apply-button')]),
             ], width=3),
@@ -106,9 +112,6 @@ def generate_tab(config, measure_data, exp_data):
             ])
         ]),
     ]
-
-    #update_graph_data(exp_data, data_start_option,
-    #                  x_axis_start_option, y_axis_start_option, fig)
 
     return tab_1
 
@@ -124,9 +127,11 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
     if x_axis == 'Tempo':
         figure['layout']['xaxis']['title']['text'] = 'Tempo (s)'
     elif x_axis == 'Log(Tempo)':
-        x = unumpy.uarray(t, ut)
+        filter_array = [(i > 0) for i in t]
+        x = unumpy.uarray(t[filter_array], ut[filter_array])
         x = unumpy.log(x)
         t, ut = unumpy.nominal_values(x), unumpy.std_devs(x)
+        r, ur = r[filter_array], ur[filter_array]
     elif x_axis == 'Exp(Tempo)':
         x = unumpy.uarray(t, ut)
         x = unumpy.exp(x)
@@ -135,9 +140,11 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
     if y_axis == 'Distância':
         figure['layout']['yaxis']['title']['text'] = 'Distância (m)'
     elif y_axis == 'Log(Distância)':
-        y = unumpy.uarray(r, ur)
+        filter_array = [(i > 0) for i in r]
+        y = unumpy.uarray(r[filter_array], ur[filter_array])
         y = unumpy.log(y)
         r, ur = unumpy.nominal_values(y), unumpy.std_devs(y)
+        t, ut = t[filter_array], ut[filter_array]
     elif y_axis == 'Exp(Distância)':
         y = unumpy.uarray(r, ur)
         y = unumpy.exp(y)
@@ -148,21 +155,34 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
     figure['data'][0]['error_x']['array'] = ut
     figure['data'][0]['error_y']['array'] = ur
 
-    # linspace = np.linspace(t0, tc, 250)
-    # f = lambda A, B, t : A * np.exp(-t) + B * np.exp(t)
-    # r = lambda t : (r0/(f(A,B,tc/tau) - 1))*(f(A,B,tc/tau) - f(A,B,t/tau))
+    # Linear regression
+    # ===
 
-    # figure['data'][1]['x'] = linspace
-    # figure['data'][1]['y'] = r(linspace)
-    # figure['data'][1]['name'] =f"Modelo com τ = {tau:.2f} +/- {utau:.2f}"
+    mydata = odr.RealData(t, r, sx=ut, sy=ur)
+    myodr = odr.ODR(mydata, odr.models.unilinear)
+    myoutput = myodr.run()
+    A, B = myoutput.beta
+    uA, uB = myoutput.sd_beta
 
-    return figure
+    line = lambda x : A*x + B
+
+    linspace = np.linspace(t[0], t[-1], 250)
+
+    figure['data'][1]['x'] = linspace
+    figure['data'][1]['y'] = line(linspace)
+
+    A_text = f"A = {A:.4f} +/- {uA:.4f}"
+    B_text = f"B = {B:.4f} +/- {uB:.4f}"
+
+    return figure, A_text, B_text
 
 # Callbacks
 # ===
 
 @callback(
     Output('tab-1-grafico', 'figure'),
+    Output('tab-1-regression-data-A', 'children'),
+    Output('tab-1-regression-data-B', 'children'),
     [Input('tab-1-apply-button', 'n_clicks')],
     State('tab-1-dropdown-data', 'value'),
     State('tab-1-dropdown-x-axis', 'value'),
