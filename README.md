@@ -34,7 +34,7 @@ To run this program, it's recommended creating a Python virtual environment:
 
     `.\venv\Scripts\activate` (Windows)
 
-then
+    then
 
     ``` 
     pip install -r requirements.txt 
