@@ -16,29 +16,29 @@ The model was constructed with the help of (todo) and
 ## Setup
 To run this program, it's recommended creating a Python virtual environment:
 
-    - Install `virtualenv` using pip
+- Install `virtualenv` using pip
     
-        ```
-        pip install virtualenv
-        ```
+    ```
+    pip install virtualenv
+    ```
     
-    - Create the virtual environment
-    
-        ```
-        python -m virtualenv venv
-        ```
-    
-    - Start environment and install packages:
-    
-        `source venv/bin/activate` (Linux)
+- Create the virtual environment
 
-        `.\venv\Scripts\activate` (Windows)
-    
-    then
-    
-        ``` 
-        pip install -r requirements.txt 
-        ```
+    ```
+    python -m virtualenv venv
+    ```
+
+- Start environment and install packages:
+
+    `source venv/bin/activate` (Linux)
+
+    `.\venv\Scripts\activate` (Windows)
+
+then
+
+    ``` 
+    pip install -r requirements.txt 
+    ```
 
 <!-- If running in a Google Colab environment, it will suffice having a cell  -->
 <!-- with the following installation script: -->
