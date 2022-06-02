@@ -97,9 +97,9 @@ def generate_tab(config, measure_data, exp_data):
                     ]),
                 ]),
                 dbc.Row([
-                    dbc.Col([html.Div("Regressão linear y = Ax + B:"),
-                             html.Div("A", id='tab-1-regression-data-A'),
-                             html.Div("A", id='tab-1-regression-data-B'),
+                    dbc.Col([dcc.Markdown(r"Regressão linear $y = Ax + B$:", mathjax=True),
+                             dcc.Markdown("A", id='tab-1-regression-data-A', mathjax=True),
+                             dcc.Markdown("A", id='tab-1-regression-data-B', mathjax=True),
                              ])
                 ]),
                 html.Br(),
@@ -171,8 +171,8 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
     figure['data'][1]['x'] = linspace
     figure['data'][1]['y'] = line(linspace)
 
-    A_text = f"A = {A:.4f} +/- {uA:.4f}"
-    B_text = f"B = {B:.4f} +/- {uB:.4f}"
+    A_text = f"A = {A:.4f} $\\pm$ {uA:.4f}"
+    B_text = f"B = {B:.4f} $\\pm$ {uB:.4f}"
 
     return figure, A_text, B_text
 

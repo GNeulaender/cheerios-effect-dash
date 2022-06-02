@@ -76,17 +76,19 @@ def change_data(new_data, figure, A, B):
 
 # Configuração do Dash
 import plotly.graph_objects as go # biblioteca plotly, para plots interativos
-import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, ctx
 from dash import Input, Output, State
+import dash_bootstrap_components as dbc
+import dash_defer_js_import as dji
 
-import tab_1
+import tab_1, tab_3
 
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #external_stylesheets = ['https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css',
 #                        'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/monokai-sublime.min.css']
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
+# external_scripts=["https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" ]
 
 dash_app = Dash(__name__,
                 #meta_tags=[{"content": "width=device-width, initial-scale=1"}],
@@ -156,16 +158,21 @@ tab_2 = [
 # ===
 
 tab_1 = tab_1.generate_tab(config, measure_data, exp_data)
+tab_3 = tab_3.generate_tab(config, measure_data, exp_data)
 
-dash_app.layout = html.Div(children=[
-    html.H1(children=["Grafico interativo"]),
-    html.Br(),
-    dcc.Tabs(id='tabs-component', value='tab-2', children=[
-        dcc.Tab(label='Tab one', value='tab-1'),
-        dcc.Tab(label='Tab two', value='tab-2'),
+dash_app.layout = html.Div([
+    dbc.Container(children=[
+        html.H1(children=["Grafico interativo"]),
+        dcc.Markdown('$\\LaTeX$', mathjax=True),
+        html.Br(),
+        dcc.Tabs(id='tabs-component', value='tab-3', children=[
+            dcc.Tab(label='Dados experimentais', value='tab-1'),
+            dcc.Tab(label='Modelo 1', value='tab-2'),
+            dcc.Tab(label='Modelo 2', value='tab-3'),
+        ]),
+        html.Br(),
+        dbc.Container(id='tabs-content', fluid=True),
     ]),
-    html.Br(),
-    dbc.Container(id='tabs-content', fluid=True)
 ])
 
 @dash_app.callback(
@@ -179,6 +186,8 @@ def update_output(value):
         A, B = config['test-model-tab']['value_A'], config['test-model-tab']['value_B']
         change_data(start_option, fig, A, B)
         return tab_2
+    elif value == 'tab-3':
+        return tab_3
 
 
 @dash_app.callback(
