@@ -55,7 +55,8 @@ def generate_tab(config, measure_data, exp_data):
 
     y_axis_options = ['Distância',
                       'Log(Distância)',
-                      'Exp(Distância)']
+                      'Exp(Distância)',
+                      '(Distância)^2']
     y_axis_start_option = 'Distância'
 
     tab_1 = [
@@ -148,6 +149,10 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
     elif y_axis == 'Exp(Distância)':
         y = unumpy.uarray(r, ur)
         y = unumpy.exp(y)
+        r, ur = unumpy.nominal_values(y), unumpy.std_devs(y)
+    elif y_axis == '(Distância)^2':
+        y = unumpy.uarray(r, ur)
+        y = y**2
         r, ur = unumpy.nominal_values(y), unumpy.std_devs(y)
 
     figure['data'][0]['x'] = t
