@@ -65,7 +65,7 @@ def generate_tab(config, measure_data, exp_data):
                 html.Br(),
                 dcc.Markdown(
                   r'''
-                  $d(t) = K_1 \, e^{-C_2 \, \frac{t}{\tau}} + \frac{(C_1 C_2 \, \frac{t}{\tau} - C_1)}{C_2^2} + K_2$
+                  $d(t) = K_1 \, e^{-C_2 \, t} + \frac{(C_1 C_2 \, t - C_1)}{C_2^2} + K_2$
                   ''', mathjax=True
                 ),
                 dbc.Row([
@@ -96,13 +96,6 @@ def generate_tab(config, measure_data, exp_data):
                         tooltip={"placement": "bottom", "always_visible": True},
                     )], width=10),
                 ]),
-                dbc.Row([
-                    dbc.Col([dcc.Markdown(r'$\tau$:', mathjax=True)], width=2),
-                    dbc.Col([dcc.Slider(
-                        min=0, max=5, value=3, id='tab-3-slider-tau',
-                        tooltip={"placement": "bottom", "always_visible": True},
-                    )], width=10),
-                ]),
                 html.Br(),
                 dbc.Row([dbc.Button(["Aplicar"], id='tab-3-apply-button')]),
                 html.Br(),
@@ -126,6 +119,7 @@ def generate_tab(config, measure_data, exp_data):
             ])
         ]),
         html.H3(["Regressão não linear"]),
+        html.Br(),
         dbc.Row([
             dbc.Col([dcc.Markdown("$C_1$", id='tab-3-regression-data-C1', mathjax=True),
                         dcc.Markdown("$C_2$", id='tab-3-regression-data-C2', mathjax=True),
@@ -134,7 +128,6 @@ def generate_tab(config, measure_data, exp_data):
                         dcc.Markdown("$K_2$", id='tab-3-regression-data-K2', mathjax=True),
                      ]),
         ]),
-        dcc.Markdown(r"$\tau$", id='tab-3-regression-data-tau', mathjax=True),
     ]
 
     return tab
@@ -152,9 +145,9 @@ def update_graph_data(exp_data, new_data, const, figure):
 
     # Linear regression
     # ===
-    C1, C2, K1, K2, tau = const[0], const[1], const[2], const[3], const[4]
+    C1, C2, K1, K2 = const[0], const[1], const[2], const[3]
 
-    d = lambda t : K1 * np.exp(-C2*(t/tau)) + (C1*C2*(t/tau) - C1)/(C2**2) + K2
+    d = lambda t : K1 * np.exp(-C2*(t)) + (C1*C2*(t) - C1)/(C2**2) + K2
 
     linspace = np.linspace(t[0], t[-1], 250)
 
@@ -173,8 +166,7 @@ def update_graph_data(exp_data, new_data, const, figure):
     Input('tab-3-slider-C2', 'value'),
     Input('tab-3-slider-K1', 'value'),
     Input('tab-3-slider-K2', 'value'),
-    Input('tab-3-slider-tau', 'value'),
     State('tab-3-grafico', 'figure'),
 )
-def update_output(data_value, C1, C2, K1, K2, tau, figure):
-    return update_graph_data(generate_tab.exp_data, data_value, [C1, C2, K1, K2, tau], figure)
+def update_output(data_value, C1, C2, K1, K2, figure):
+    return update_graph_data(generate_tab.exp_data, data_value, [C1, C2, K1, K2], figure)
