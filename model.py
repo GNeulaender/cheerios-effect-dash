@@ -62,9 +62,21 @@ def non_linear_regression(data_entry, A, B) -> [float]:
 
     return tau, utau
 
-def non_linear_model(data_entry, parameters = []) -> [float]:
+def non_linear_model(data_entry, parameters = [0.001,0.001]) -> [float]:
     t, r = data_entry['t'], data_entry['r']
     ut, ur = data_entry['ut'], data_entry['ur']
     r0, tc = data_entry['r0'], data_entry['tc']
 
-    return None
+    def d(P,t):
+        return (((P[0]/P[1])*tc + r0)/(1 - np.exp(-P[1]*tc)))*(np.exp(-P[1]*t) - 1) + (P[0]/P[1])*t + r0
+
+    mymodel = odr.Model(d)
+
+    mydata = odr.RealData(t, r, sx=ut, sy=ur)
+    myodr = odr.ODR(mydata, mymodel, beta0=parameters)
+    myoutput = myodr.run()
+
+    C1, uC1 = myoutput.beta[0], myoutput.sd_beta[0]
+    C2, uC2 = myoutput.beta[1], myoutput.sd_beta[1]
+
+    return C1, uC1, C2, uC2

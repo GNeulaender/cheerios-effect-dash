@@ -2,7 +2,7 @@
 import plotly.graph_objects as go # biblioteca plotly, para plots interativos
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, ctx
-from dash import Input, Output, State
+from dash import Input, Output, State, callback
 
 from model import *
 
@@ -12,6 +12,8 @@ import numpy as np
 # ===
 
 def generate_tab(config, measure_data, exp_data):
+    generate_tab.exp_data = exp_data
+
     fig = go.Figure(
         {'layout' : {'xaxis_title' : 'Tempo (s)',
                      'yaxis_title' : 'Distância (m)',
@@ -30,8 +32,8 @@ def generate_tab(config, measure_data, exp_data):
         error_y=dict(
             type='data', # value of error bar given in data coordinates
             visible=True)
+        )
     )
-                  )
 
     fig.add_trace(
         go.Scatter(
@@ -104,13 +106,14 @@ def update_graph_data(exp_data, new_data, figure, A, B):
 
     return figure
 
-def update_graph_function(current_data, figure, A, B, tau = None, utau = None):
+def update_graph_function(current_data, figure, A, B, new_tau = None):
     r0, tc = current_data['r0'], current_data['tc']
 
-    if (tau == None) and (utau == None):
+    if new_tau == None:
         tau, utau = non_linear_regression(current_data, A, B)
         figure['data'][1]['name'] = f"Modelo com τ = {tau:.2f} +/- {utau:.2f}"
     else:
+        tau = np.float64(new_tau)
         figure['data'][1]['name'] = f"Modelo com τ = {tau:.2f}"
 
     f = lambda A, B, t : A * np.exp(-t) + B * np.exp(t)
@@ -118,3 +121,22 @@ def update_graph_function(current_data, figure, A, B, tau = None, utau = None):
     figure['data'][1]['y'] = r(figure['data'][1]['x'])
 
     return figure
+
+@callback(
+    Output('tab-2-grafico', 'figure'),
+    Input('tab-2-dropdown-dados', 'value'),
+    Input('tab-2-sliderA', 'value'),
+    Input('tab-2-sliderB', 'value'),
+    Input('tab-2-sliderTau', 'value'),
+    State('tab-2-grafico', 'figure'))
+def update_output(dropdown, valueA, valueB, valueTau, figure):
+    current_data = generate_tab.exp_data[dropdown]
+    if ctx.triggered_id == 'tab-2-dropdown-dados':
+        return update_graph_data(generate_tab.exp_data, dropdown,
+                                 figure, valueA, valueB)
+    elif ctx.triggered_id == 'tab-2-sliderTau':
+        return update_graph_function(current_data, figure,
+                                     valueA, valueB, valueTau)
+    else:
+        return update_graph_function(current_data, figure,
+                                     valueA, valueB)

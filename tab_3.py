@@ -50,7 +50,7 @@ def generate_tab(config, measure_data, exp_data):
             name="Fit não linear",
             mode="lines",
             visible=True,
-            line=dict(color="#d2daf5", width=3),
+            line=dict(color="#e60000", width=3),
         )
     )
 
@@ -59,6 +59,12 @@ def generate_tab(config, measure_data, exp_data):
 
 
     tab = [
+        dbc.Accordion([
+            dbc.AccordionItem([
+                "Aqui será colocado um arquivo Markdown"
+            ], title="Mais informações"),
+        ],start_collapsed=True),
+        html.Br(),
         dbc.Row([
             dbc.Col([
                 html.H3(["Opções"]),
@@ -71,34 +77,27 @@ def generate_tab(config, measure_data, exp_data):
                 dbc.Row([
                     dbc.Col([dcc.Markdown('$C_1$:', mathjax=True)], width=2),
                     dbc.Col([dcc.Slider(
-                        min=-0.1, max=0, value=-0.06, id='tab-3-slider-C1',
+                        min=-0.01, max=0, value=-0.01, id='tab-3-slider-C1',
                         tooltip={"placement": "bottom", "always_visible": True},
                     )], width=10),
                 ]),
                 dbc.Row([
                     dbc.Col([dcc.Markdown('$C_2$:', mathjax=True)], width=2),
                     dbc.Col([dcc.Slider(
-                        min=-2, max=-1, value=-1, id='tab-3-slider-C2',
-                        tooltip={"placement": "bottom", "always_visible": True},
-                    )], width=10),
-                ]),
-                dbc.Row([
-                    dbc.Col([dcc.Markdown('$K_1$:', mathjax=True)], width=2),
-                    dbc.Col([dcc.Slider(
-                        min=-0.01, max=0, value=-0.001, id='tab-3-slider-K1',
-                        tooltip={"placement": "bottom", "always_visible": True},
-                    )], width=10),
-                ]),
-                dbc.Row([
-                    dbc.Col([dcc.Markdown('$K_2$:', mathjax=True)], width=2),
-                    dbc.Col([dcc.Slider(
-                        min=0, max=0.02, value=0.1, id='tab-3-slider-K2',
+                        min=-1.5, max=0, value=-1, id='tab-3-slider-C2',
                         tooltip={"placement": "bottom", "always_visible": True},
                     )], width=10),
                 ]),
                 html.Br(),
                 dbc.Row([dbc.Button(["Aplicar"], id='tab-3-apply-button')]),
                 html.Br(),
+                html.H3(["Regressão não linear"]),
+                html.Br(),
+                dbc.Row([
+                    dbc.Col([dcc.Markdown("$C_1$", id='tab-3-regression-data-C1', mathjax=True),
+                             dcc.Markdown("$C_2$", id='tab-3-regression-data-C2', mathjax=True),
+                             ]),
+                ]),
             ], width=3),
             dbc.Col([
                 html.Center([html.H3(["Dados experimentais"])]),
@@ -118,16 +117,6 @@ def generate_tab(config, measure_data, exp_data):
                           figure=fig),
             ])
         ]),
-        html.H3(["Regressão não linear"]),
-        html.Br(),
-        dbc.Row([
-            dbc.Col([dcc.Markdown("$C_1$", id='tab-3-regression-data-C1', mathjax=True),
-                        dcc.Markdown("$C_2$", id='tab-3-regression-data-C2', mathjax=True),
-                     ]),
-            dbc.Col([dcc.Markdown("$K_1$", id='tab-3-regression-data-K1', mathjax=True),
-                        dcc.Markdown("$K_2$", id='tab-3-regression-data-K2', mathjax=True),
-                     ]),
-        ]),
     ]
 
     return tab
@@ -135,6 +124,7 @@ def generate_tab(config, measure_data, exp_data):
 def update_graph_data(exp_data, new_data, const, figure):
     t, r = exp_data[new_data]['t'], exp_data[new_data]['r']
     ut, ur = exp_data[new_data]['ut'], exp_data[new_data]['ur']
+    tc, r0 = exp_data[new_data]['tc'], exp_data[new_data]['r0']
 
     figure['layout']['title'] = f'Distância vs Tempo - {new_data}'
 
@@ -143,30 +133,62 @@ def update_graph_data(exp_data, new_data, const, figure):
     figure['data'][0]['error_x']['array'] = ut
     figure['data'][0]['error_y']['array'] = ur
 
-    # Linear regression
-    # ===
-    C1, C2, K1, K2 = const[0], const[1], const[2], const[3]
+    figure = update_graph_function(exp_data[new_data], const, figure)
 
-    d = lambda t : K1 * np.exp(-C2*(t)) + (C1*C2*(t) - C1)/(C2**2) + K2
+    return figure
 
-    linspace = np.linspace(t[0], t[-1], 250)
+def update_graph_function(current_data, const, figure):
+    tc, r0 = current_data['tc'], current_data['r0']
+
+    C1, C2 = const[0], const[1]
+
+    d = lambda t : (((C1/C2)*tc + r0)/(1 - np.exp(-C2*tc)))*(np.exp(-C2*t) - 1) + (C1/C2)*t + r0
+
+    linspace = np.linspace(figure['data'][0]['x'][0], tc, 250)
 
     figure['data'][1]['x'] = linspace
     figure['data'][1]['y'] = d(linspace)
 
     return figure
 
+def update_regression(current_data, const, figure):
+    tc, r0 = current_data['tc'], current_data['r0']
+    C1, uC1, C2, uC2 = non_linear_model(current_data, const)
+
+    d = lambda t : (((C1/C2)*tc + r0)/(1 - np.exp(-C2*tc)))*(np.exp(-C2*t) - 1) + (C1/C2)*t + r0
+
+    linspace = np.linspace(figure['data'][0]['x'][0], tc, 250)
+
+    figure['data'][2]['x'] = linspace
+    figure['data'][2]['y'] = d(linspace)
+
+    textC1 = f'$C_1 = {C1:.4f} \\pm {uC1:.4f}$'
+    textC2 = f'$C_2 = {C2:.4f} \\pm {uC2:.4f}$'
+
+    return figure, textC1, textC2
+
 # Callbacks
 # ===
 
 @callback(
     Output('tab-3-grafico', 'figure'),
+    Output('tab-3-regression-data-C1', 'children'),
+    Output('tab-3-regression-data-C2', 'children'),
+    [Input('tab-3-apply-button', 'n_clicks'),
     Input('tab-3-dropdown-data', 'value'),
     Input('tab-3-slider-C1', 'value'),
-    Input('tab-3-slider-C2', 'value'),
-    Input('tab-3-slider-K1', 'value'),
-    Input('tab-3-slider-K2', 'value'),
+    Input('tab-3-slider-C2', 'value')],
     State('tab-3-grafico', 'figure'),
+    State('tab-3-regression-data-C1', 'children'),
+    State('tab-3-regression-data-C2', 'children'),
 )
-def update_output(data_value, C1, C2, K1, K2, figure):
-    return update_graph_data(generate_tab.exp_data, data_value, [C1, C2, K1, K2], figure)
+def update_output(n_clicks, data_value, C1, C2, figure, textC1, textC2):
+    current_data = generate_tab.exp_data[data_value]
+    if ctx.triggered_id == 'tab-3-apply-button':
+        return update_regression(current_data, [C1, C2], figure)
+    elif (ctx.triggered_id == 'tab-3-dropdown-data') or (ctx.triggered_id == None):
+        new_fig = update_graph_data(generate_tab.exp_data, data_value, [C1, C2], figure)
+        return new_fig, textC1, textC2
+    else:
+        new_fig = update_graph_function(current_data, [C1, C2], figure)
+        return new_fig, textC1, textC2
