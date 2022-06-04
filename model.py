@@ -61,6 +61,15 @@ def non_linear_regression(data_entry, A, B) -> [float]:
     utau = myoutput.sd_beta[0]
 
     return tau, utau
+def linear_regression(x, ux, y, uy):
+    mydata = odr.RealData(x, y, sx=ux, sy=uy)
+    myodr = odr.ODR(mydata, odr.models.unilinear)
+    myoutput = myodr.run()
+
+    A, B = myoutput.beta
+    uA, uB = myoutput.sd_beta
+
+    return A, uA, B, uB
 
 def non_linear_model(data_entry, parameters = [0.001,0.001]) -> [float]:
     t, r = data_entry['t'], data_entry['r']

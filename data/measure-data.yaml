@@ -36,6 +36,8 @@ experimental-data:
     Lantejoulas 3:
         profundidade: 27.7E-3
         uprofundidade: 0.0004898979485566356
+        massa: 0.3646E-3
+        umassa: 2.886751345948129e-08
         MA: None
         uMA: None
         MB: None
@@ -44,6 +46,8 @@ experimental-data:
     Lantejoulas 5:
         profundidade: 27.7E-3
         uprofundidade: 0.0004898979485566356
+        massa: 0.3775E-3
+        umassa: 2.886751345948129e-08
         MA: None
         uMA: None
         MB: None
@@ -52,6 +56,8 @@ experimental-data:
     Lantejoulas 7:
         profundidade: 27.7E-3
         uprofundidade: 0.0004898979485566356
+        massa: 0.3910E-3
+        umassa: 2.886751345948129e-08
         MA: None
         uMA: None
         MB: None

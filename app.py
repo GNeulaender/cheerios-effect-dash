@@ -53,7 +53,7 @@ from dash import Input, Output, State
 import dash_bootstrap_components as dbc
 import dash_defer_js_import as dji
 
-import tab_1, tab_2, tab_3
+import tab_1, tab_2, tab_3, tab_4
 
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #external_stylesheets = ['https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css',
@@ -64,6 +64,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 dash_app = Dash(__name__,
                 #meta_tags=[{"content": "width=device-width, initial-scale=1"}],
+                suppress_callback_exceptions=True,
                 external_stylesheets=external_stylesheets)
 app = dash_app.server
 
@@ -73,16 +74,18 @@ app = dash_app.server
 tab_1 = tab_1.generate_tab(config, measure_data, exp_data)
 tab_2 = tab_2.generate_tab(config, measure_data, exp_data)
 tab_3 = tab_3.generate_tab(config, measure_data, exp_data)
+tab_4 = tab_4.generate_tab(config, measure_data, exp_data)
 
 dash_app.layout = html.Div([
     dbc.Container(children=[
         html.H1(children=["Grafico interativo"]),
         dcc.Markdown('$\\LaTeX$', mathjax=True),
         html.Br(),
-        dcc.Tabs(id='tabs-component', value='tab-3', children=[
+        dcc.Tabs(id='tabs-component', value='tab-4', children=[
             dcc.Tab(label='Dados experimentais', value='tab-1'),
             dcc.Tab(label='Modelo 1', value='tab-2'),
             dcc.Tab(label='Modelo 2', value='tab-3'),
+            dcc.Tab(label='Resultados', value='tab-4'),
         ]),
         html.Br(),
         dbc.Container(id='tabs-content', fluid=True),
@@ -100,6 +103,8 @@ def update_output(value):
         return tab_2
     elif value == 'tab-3':
         return tab_3
+    elif value == 'tab-4':
+        return tab_4
 
 if __name__ == '__main__':
     dash_app.run_server(debug=True)

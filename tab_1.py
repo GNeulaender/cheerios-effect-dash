@@ -97,10 +97,11 @@ def generate_tab(config, measure_data, exp_data):
                         ),
                     ]),
                 ]),
+                html.Br(),
                 dbc.Row([
-                    dbc.Col([dcc.Markdown(r"Regressão linear $y = Ax + B$:", mathjax=True),
+                    dbc.Col([dcc.Markdown(r"#### Regressão linear ($y = Ax + B$):", mathjax=True),
                              dcc.Markdown("A", id='tab-1-regression-data-A', mathjax=True),
-                             dcc.Markdown("A", id='tab-1-regression-data-B', mathjax=True),
+                             dcc.Markdown("B", id='tab-1-regression-data-B', mathjax=True),
                              ])
                 ]),
                 html.Br(),
@@ -162,12 +163,7 @@ def update_graph_data(exp_data, new_data, x_axis, y_axis, figure):
 
     # Linear regression
     # ===
-
-    mydata = odr.RealData(t, r, sx=ut, sy=ur)
-    myodr = odr.ODR(mydata, odr.models.unilinear)
-    myoutput = myodr.run()
-    A, B = myoutput.beta
-    uA, uB = myoutput.sd_beta
+    A, uA, B, uB = linear_regression(t, ut, r, ur)
 
     line = lambda x : A*x + B
 
