@@ -5,98 +5,70 @@
 general:
     uposicao-tracker: 0.0020412414523193153 # triangular (regua)
     utempo-tracker: 0.004811252243246881 # retangular de 1/60 (nº de frames)
-    diametro-tarraxinha: 1.044097747E-2 # TODO medir com o paquímetro
+    diametro-tarraxinha: 10.2E-3 # medido com paquímetro
     udiametro-tarraxinha: 0.00020412414523193154 # incerteza do paquímetro
 
 experimental-data:
     Profundidade 1:
-        profundidade: 23.1E-3 # profundidade
+        profundidade: 20.65E-3 # profundidade
         uprofundidade: 0.0004898979485566356 # incerteza da profundidade
-        MA: None # massa A
-        uMA: None # incerteza da massa A
-        MB: None # massa B
-        uMB: None # incerteza da massa B
 
     Profundidade 2:
-        profundidade: 25.8E-3
+        profundidade: 21.6E-3
         uprofundidade: 0.0004898979485566356
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
 
     Profundidade 3:
+        profundidade: 22.8E-3
+        uprofundidade: 0.0004898979485566356
+
+    Profundidade 4:
+        profundidade: 25.8E-3
+        uprofundidade: 0.0004898979485566356
+
+    Profundidade 5:
         profundidade: 27.5E-3
         uprofundidade: 0.0004898979485566356
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-
-    Lantejoulas 3:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        massa: 0.3646E-3
-        umassa: 2.886751345948129e-08
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-
-    Lantejoulas 5:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        massa: 0.3775E-3
-        umassa: 2.886751345948129e-08
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-
-    Lantejoulas 7:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        massa: 0.3910E-3
-        umassa: 2.886751345948129e-08
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
 
     Alcool 1:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-        concentracao: None
-        uconcentracao: None
+        concentracao: 0.0333
+        uconcentracao: 0.0017
         alcool: 0.5
 
     Alcool 2:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-        alcool: 0.5 + 0.7
+        concentracao: 0.080
+        uconcentracao: 0.004
+        alcool: 0.7
 
     Alcool 3:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-        alcool: 0.5 + 0.7 + 0.3
+        concentracao: 0.100
+        uconcentracao: 0.005
+        alcool: 0.3
 
     Alcool 4:
-        profundidade: 27.7E-3
-        uprofundidade: 0.0004898979485566356
-        MA: None
-        uMA: None
-        MB: None
-        uMB: None
-        alcool: 0.5 + 0.7 + 0.3 + 0.4
+        concentracao: 0.127
+        uconcentracao: 0.006
+        alcool: 0.4
+
+    Lantejoulas 0:
+        massa: 0.3439E-3
+        umassa: 2.886751345948129E-08
+
+    Lantejoulas 1:
+        massa: 0.3509E-3
+        umassa: 2.886751345948129E-08
+
+    Lantejoulas 2:
+        massa: 0.3577E-3
+        umassa: 2.886751345948129E-08
+
+    Lantejoulas 3:
+        massa: 0.3646E-3
+        umassa: 2.886751345948129E-08
+
+    Lantejoulas 4:
+        massa: 0.3711E-3
+        umassa: 2.886751345948129E-08
+
+    Lantejoulas 5:
+        massa: 0.3775E-3
+        umassa: 2.886751345948129E-08

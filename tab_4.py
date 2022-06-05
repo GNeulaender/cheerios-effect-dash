@@ -1,7 +1,7 @@
 # Configuração do Dash
 import plotly.graph_objects as go # biblioteca plotly, para plots interativos
 import dash_bootstrap_components as dbc
-from dash import Dash, html, dcc, ctx
+from dash import Dash, html, dcc, ctx, dash_table
 from dash import Input, Output, State, callback
 
 from model import *
@@ -119,6 +119,11 @@ def generate_tab(config, measure_data, exp_data):
                           figure=fig_C1),
             ])
         ]),
+        dbc.Accordion([
+            dbc.AccordionItem([
+                dash_table.DataTable(id='tab-4-table-C1')
+            ], title="Tabela de Dados do C1"),
+        ],start_collapsed=True),
 
         html.Br(), # Espaçamento
         # Página do C2
@@ -176,6 +181,11 @@ def generate_tab(config, measure_data, exp_data):
                           figure=fig_C2),
             ])
         ]),
+        dbc.Accordion([
+            dbc.AccordionItem([
+                dash_table.DataTable(id='tab-4-table-C2')
+            ], title="Tabela de Dados do C2"),
+        ],start_collapsed=True),
     ]
 
     return tab_4
@@ -183,33 +193,51 @@ def generate_tab(config, measure_data, exp_data):
 def update_graph_data(exp_data, measure_data, new_tag, x_axis, y_axis, figure):
     x, ux, y, uy = [], [], [], []
     measure_data = measure_data['experimental-data']
+
+    data_name = 'C1 (m/s^2)'
+    if 'C2' in y_axis:
+        data_name = 'C2 (1/s)'
+    tag_name = ''
+
     for name in exp_data.keys():
         if not(new_tag.lower() in name.lower()):
             continue
 
         if new_tag == 'Lantejoulas':
+            tag_name = 'Massa (kg)'
             x.append(measure_data[name]['massa'])
             ux.append(measure_data[name]['umassa'])
         elif new_tag == 'Profundidade':
+            tag_name = 'Profundidade (m)'
             x.append(measure_data[name]['profundidade'])
             ux.append(measure_data[name]['uprofundidade'])
         elif new_tag == 'Alcool':
+            tag_name = 'Concentração'
             x.append(measure_data[name]['concentracao'])
             ux.append(measure_data[name]['uconcentracao'])
 
         C1, uC1, C2, uC2 = non_linear_model(exp_data[name], [0.01, -1])
-        if 'C1' in y_axis:
+        if 'C1' in data_name:
             y.append(C1), uy.append(uC1)
-        elif 'C2' in y_axis:
+        else:
             y.append(-C2), uy.append(uC2)
+
+    x, ux = np.array(x), np.array(ux)
+    y, uy = np.array(y), np.array(uy)
+
+    # Table data
+    # ===
+    table_data = pd.DataFrame({
+        f'{data_name}' :  y,
+        f'u{data_name}' :uy,
+        f'{tag_name}' :  x,
+        f'u{tag_name}' : ux,
+    })
 
     figure['layout']['title'] = f'{x_axis} vs {y_axis}'
 
     figure['layout']['xaxis']['title']['text'] = x_axis
     figure['layout']['yaxis']['title']['text'] = y_axis
-
-    x, ux = np.array(x), np.array(ux)
-    y, uy = np.array(y), np.array(uy)
 
     if x_axis in ['Log(Lantejoulas)', 'Log(Profundidade)', 'Log(Alcool)']:
         filter_array = [(i > 0) for i in x]
@@ -245,8 +273,7 @@ def update_graph_data(exp_data, measure_data, new_tag, x_axis, y_axis, figure):
     A_text = f"A = {A:.4f} $\\pm$ {uA:.4f}"
     B_text = f"B = {B:.4f} $\\pm$ {uB:.4f}"
 
-    return figure, A_text, B_text
-
+    return figure, A_text, B_text, table_data
 
 @callback(
     Output('tab-4-x-axis-C1', 'options'),
@@ -260,6 +287,8 @@ def update_options(current_tag):
     Output('tab-4-graph-C1', 'figure'),
     Output('tab-4-regression-A-C1', 'children'),
     Output('tab-4-regression-B-C1', 'children'),
+    Output('tab-4-table-C1', 'data'),
+    Output('tab-4-table-C1', 'columns'),
     [Input('tab-4-apply-button-C1', 'n_clicks')],
     State('tab-4-tags-C1', 'value'),
     State('tab-4-x-axis-C1', 'value'),
@@ -267,7 +296,10 @@ def update_options(current_tag):
     State('tab-4-graph-C1', 'figure'),
 )
 def on_button_click(button_value, current_tag, x_axis, y_axis, figure):
-    return update_graph_data(generate_tab.exp_data, generate_tab.measure_data, current_tag, x_axis, y_axis, figure)
+    new_fig, textA, textB, new_data = update_graph_data(generate_tab.exp_data, generate_tab.measure_data, current_tag, x_axis, y_axis, figure)
+    data_dict = new_data.to_dict('records')
+    data_columns = [{"name" : i, "id" : i} for i in new_data.columns]
+    return new_fig, textA, textB, data_dict, data_columns
 
 @callback(
     Output('tab-4-x-axis-C2', 'options'),
@@ -281,6 +313,8 @@ def update_options(current_tag):
     Output('tab-4-graph-C2', 'figure'),
     Output('tab-4-regression-A-C2', 'children'),
     Output('tab-4-regression-B-C2', 'children'),
+    Output('tab-4-table-C2', 'data'),
+    Output('tab-4-table-C2', 'columns'),
     [Input('tab-4-apply-button-C2', 'n_clicks')],
     State('tab-4-tags-C2', 'value'),
     State('tab-4-x-axis-C2', 'value'),
@@ -288,4 +322,7 @@ def update_options(current_tag):
     State('tab-4-graph-C2', 'figure'),
 )
 def on_button_click(button_value, current_tag, x_axis, y_axis, figure):
-    return update_graph_data(generate_tab.exp_data, generate_tab.measure_data, current_tag, x_axis, y_axis, figure)
+    new_fig, textA, textB, new_data = update_graph_data(generate_tab.exp_data, generate_tab.measure_data, current_tag, x_axis, y_axis, figure)
+    data_dict = new_data.to_dict('records')
+    data_columns = [{"name" : i, "id" : i} for i in new_data.columns]
+    return new_fig, textA, textB, data_dict, data_columns

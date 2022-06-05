@@ -69,24 +69,19 @@ def generate_tab(config, measure_data, exp_data):
             dbc.Col([
                 html.H3(["Opções"]),
                 html.Br(),
-                dcc.Markdown(
-                  r'''
-                  $d(t) = K_1 \, e^{-C_2 \, t} + \frac{(C_1 C_2 \, t - C_1)}{C_2^2} + K_2$
-                  ''', mathjax=True
-                ),
                 dbc.Row([
                     dbc.Col([dcc.Markdown('$C_1$:', mathjax=True)], width=2),
                     dbc.Col([dcc.Slider(
-                        min=-0.01, max=0, value=-0.01, id='tab-3-slider-C1',
+                        min=0, max=0.01, value=0.001, id='tab-3-slider-C1',
                         tooltip={"placement": "bottom", "always_visible": True},
-                    )], width=10),
+                    )]),
                 ]),
                 dbc.Row([
                     dbc.Col([dcc.Markdown('$C_2$:', mathjax=True)], width=2),
                     dbc.Col([dcc.Slider(
-                        min=-1.5, max=0, value=-1, id='tab-3-slider-C2',
+                        min=-5, max=0, value=-1, id='tab-3-slider-C2',
                         tooltip={"placement": "bottom", "always_visible": True},
-                    )], width=10),
+                    )]),
                 ]),
                 html.Br(),
                 dbc.Row([dbc.Button(["Aplicar"], id='tab-3-apply-button')]),
@@ -102,17 +97,12 @@ def generate_tab(config, measure_data, exp_data):
             dbc.Col([
                 html.Center([html.H3(["Dados experimentais"])]),
                 html.Br(),
-                dbc.Row([
-                    #dbc.Col(["Dados:"], width=1),
-                    dbc.Col([
-                        dcc.Dropdown(
-                            options=data_dropdown_options,
-                            value = data_start_option,
-                            clearable = False,
-                            id='tab-3-dropdown-data'
-                        ),
-                    ]),
-                ]),
+                dcc.Dropdown(
+                    options=data_dropdown_options,
+                    value = data_start_option,
+                    clearable = False,
+                    id='tab-3-dropdown-data'
+                ),
                 dcc.Graph(id='tab-3-grafico',
                           figure=fig),
             ])
