@@ -35,12 +35,12 @@ exp_data = import_exp_data(config['general']['video-data-file'],
 
 # Regressão não-linear
 
-for name in exp_data.keys():
-    tau, utau = non_linear_regression(exp_data[name],
-                                      config['test-model-tab']['value_A'],
-                                      config['test-model-tab']['value_B'])
-    exp_data[name]['tau'] = tau
-    exp_data[name]['utau'] = utau
+# for name in exp_data.keys():
+#     tau, utau = non_linear_regression(exp_data[name],
+#                                       config['test-model-tab']['value_A'],
+#                                       config['test-model-tab']['value_B'])
+#     exp_data[name]['tau'] = tau
+#     exp_data[name]['utau'] = utau
 
 #
 # Gráfico interativo
@@ -53,7 +53,7 @@ from dash import Input, Output, State
 import dash_bootstrap_components as dbc
 import dash_defer_js_import as dji
 
-import tab_1, tab_2, tab_3, tab_4
+import tab_1, tab_3, tab_4
 
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #external_stylesheets = ['https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css',
@@ -72,7 +72,7 @@ app = dash_app.server
 # ===
 
 tab_1 = tab_1.generate_tab(config, measure_data, exp_data)
-tab_2 = tab_2.generate_tab(config, measure_data, exp_data)
+# tab_2 = tab_2.generate_tab(config, measure_data, exp_data)
 tab_3 = tab_3.generate_tab(config, measure_data, exp_data)
 tab_4 = tab_4.generate_tab(config, measure_data, exp_data)
 
@@ -83,8 +83,8 @@ dash_app.layout = html.Div([
         html.Br(),
         dcc.Tabs(id='tabs-component', value='tab-4', children=[
             dcc.Tab(label='Dados experimentais', value='tab-1'),
-            dcc.Tab(label='Modelo 1', value='tab-2'),
-            dcc.Tab(label='Modelo 2', value='tab-3'),
+            # dcc.Tab(label='Modelo 1', value='tab-2'),
+            dcc.Tab(label='Modelo', value='tab-3'),
             dcc.Tab(label='Resultados', value='tab-4'),
         ]),
         html.Br(),
@@ -99,8 +99,8 @@ dash_app.layout = html.Div([
 def update_output(value):
     if value == 'tab-1':
         return tab_1
-    elif value == 'tab-2':
-        return tab_2
+    # elif value == 'tab-2':
+    #     return tab_2
     elif value == 'tab-3':
         return tab_3
     elif value == 'tab-4':

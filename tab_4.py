@@ -227,7 +227,11 @@ def update_graph_data(exp_data, measure_data, new_tag, x_axis, y_axis, figure):
 
     # Table data
     # ===
+    n_list = range(1, len(y)+1)
+    if 'Massa' in tag_name:
+        n_list = range(0, len(y))
     table_data = pd.DataFrame({
+        'N°' :  n_list,
         f'{data_name}' :  y,
         f'u{data_name}' :uy,
         f'{tag_name}' :  x,

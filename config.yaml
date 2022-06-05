@@ -2,7 +2,6 @@
 # Configuration file
 #
 general:
-    html-header: 'assets/hearder.html'
     video-data-file: 'data/dados-videos.xlsx'
     measure-data-file: 'data/measure-data.yaml'
 

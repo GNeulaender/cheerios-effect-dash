@@ -104,7 +104,8 @@ def generate_tab(config, measure_data, exp_data):
                     id='tab-3-dropdown-data'
                 ),
                 dcc.Graph(id='tab-3-grafico',
-                          figure=fig),
+                          figure=fig, config={'edits': {'legendPosition' : True,
+                                                        'legendText' : True}}),
             ])
         ]),
     ]
